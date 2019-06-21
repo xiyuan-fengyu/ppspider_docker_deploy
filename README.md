@@ -16,8 +16,8 @@ RUN echo "${ROOT_PASSWORD}" | passwd --stdin root \
     && if [ "${NPM_REGISTRY} " != " " ];then (npm config set registry=${NPM_REGISTRY}) fi
 ' > Dockerfile
 docker build -t ppspider_env .  
-# 创建 my_ppspider_env 实例
-docker run -itd -e "container=docker" --network=host --name my_ppspider_env ppspider_env /usr/sbin/init
+# 创建 my_ppspider_env 实例，需要暴露 webUi端口 9000，mongodb端口 27017，需要根据实际情况决定要暴露的端口
+docker run -itd -e "container=docker" --network=host -p 9000:9000 -p 27017:27017 --name my_ppspider_env ppspider_env /usr/sbin/init
 
 # 部署项目
 ppspiderWorkplace=/root/ppspider
@@ -27,17 +27,25 @@ ppspiderProject=${ppspiderProjectRep##*/}
 
 echo -e '
 cd '$ppspiderWorkplace'
-git clone --progress '$ppspiderProjectRep' '$ppspiderProject'
-cd '$ppspiderProject'
+if [[ -d "'$ppspiderWorkplace'/'$ppspiderProject'" && -d "'$ppspiderWorkplace'/'$ppspiderProject'/.git" ]]; then
+    # update
+    cd '$ppspiderProject'
+    git pull
+else
+    # clone
+    rm -rf '$ppspiderProject'
+    git clone --progress '$ppspiderProjectRep' '$ppspiderProject'
+    cd '$ppspiderProject'
+fi
 yarn install
 tsc -w false
 echo "'$ppspiderStartCmd'"
 '$ppspiderStartCmd'
-tail -f main.log &
+timeout 30 tail -f main.log
 ' > /tmp/$ppspiderProject.sh
 docker exec my_ppspider_env mkdir -p $ppspiderWorkplace
 docker cp /tmp/$ppspiderProject.sh my_ppspider_env:$ppspiderWorkplace/$ppspiderProject.sh
 docker exec my_ppspider_env chmod +x $ppspiderWorkplace/$ppspiderProject.sh
 docker exec my_ppspider_env sh $ppspiderWorkplace/$ppspiderProject.sh
-
+# docker stop my_ppspider_env && docker rm my_ppspider_env
 ```
