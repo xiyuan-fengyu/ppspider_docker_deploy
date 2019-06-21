@@ -8,9 +8,9 @@ echo -e '
 FROM xiyuanfengyu/ppspider_env
 
 ARG ROOT_PASSWORD=123456
-ARG NPM_REGISTRY=https://registry.npm.taobao.org
+# ARG NPM_REGISTRY=https://registry.npm.taobao.org
 
-ENV PUPPETEER_DOWNLOAD_HOST=https://npm.taobao.org/mirrors/
+# ENV PUPPETEER_DOWNLOAD_HOST=https://npm.taobao.org/mirrors/
 
 RUN echo "${ROOT_PASSWORD}" | passwd --stdin root \
     && if [ "${NPM_REGISTRY} " != " " ];then (npm config set registry=${NPM_REGISTRY}) fi
