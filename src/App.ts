@@ -19,7 +19,7 @@ import {config} from "./config";
 class TestTask {
 
     @OnStart({urls: config.startUrl}) // execute once after startup
-    @FromQueue({name: "sub_urls", parallel: 2, exeInterval: 250}) // fetch job from queue and execute
+    @FromQueue({name: "sub_urls", parallel: 1, exeInterval: 5000}) // fetch job from queue and execute
     @AddToQueue({name: "sub_urls"}) // add the return to queue
     async roamingDynamicWebsiteByPuppeteer(job: Job, page: Page) {
         await PuppeteerUtil.defaultViewPort(page); // set default viewport
@@ -46,7 +46,7 @@ class TestTask {
 
     // // if you want to get something from static web page, add "cheerio": "^1.0.0-rc.3" to package.json/dependencies and "@types/cheerio": "^0.22.11" to package.json/devDependencies
     // @OnStart({urls: config.startUrl}) // execute once after startup
-    // @FromQueue({name: "sub_urls", parallel: 2, exeInterval: 250}) // fetch job from queue and execute
+    // @FromQueue({name: "sub_urls", parallel: 1, exeInterval: 5000}) // fetch job from queue and execute
     // @AddToQueue({name: "sub_urls"}) // add the return to queue
     // async roamingStaticWebsiteByRequestAndCheerio(job: Job) {
     //     const headers: any = {
