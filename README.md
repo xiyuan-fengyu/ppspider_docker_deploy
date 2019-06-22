@@ -22,7 +22,7 @@ docker run -itd -e "container=docker" --network=host -p 9000:9000 -p 27017:27017
 # 部署项目
 ppspiderWorkplace=/root/ppspider
 ppspiderProjectRep=https://github.com/xiyuan-fengyu/ppspider_docker_deploy
-ppspiderStartCmd="nohup node lib/App.js 1>main.log 2>&1 &"
+ppspiderStartCmd="node lib/App.js"
 ppspiderProject=${ppspiderProjectRep##*/}
 
 echo -e '
@@ -37,10 +37,12 @@ else
     git clone --progress '$ppspiderProjectRep' '$ppspiderProject'
     cd '$ppspiderProject'
 fi
+# install npm dependencies
 yarn install
+# compile ts to js
 tsc -w false
-echo "'$ppspiderStartCmd'"
-'$ppspiderStartCmd'
+echo "nohup '$ppspiderStartCmd' 1>main.log 2>&1 &"
+nohup '$ppspiderStartCmd' 1>main.log 2>&1 &
 timeout 30 tail -f main.log
 ' > /tmp/$ppspiderProject.sh
 docker exec my_ppspider_env mkdir -p $ppspiderWorkplace
