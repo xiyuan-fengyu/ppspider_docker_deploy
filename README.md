@@ -23,7 +23,7 @@ docker run -itd -e "container=docker" --network=host -p 9000:9000 -p 27017:27017
 ppspiderWorkplace=/root/ppspider
 ppspiderProjectRep=https://github.com/xiyuan-fengyu/ppspider_docker_deploy
 ppspiderStartCmd="node lib/App.js"
-ppspiderProject=${ppspiderProjectRep##*/}
+ppspiderProject=`basename $ppspiderProjectRep .git`
 
 echo -e '
 cd '$ppspiderWorkplace'
