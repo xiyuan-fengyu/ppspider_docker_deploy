@@ -9,11 +9,11 @@ FROM docker.io/xiyuanfengyu/ppspider_env
 
 ARG ROOT_PASSWORD=123456
 ARG NPM_REGISTRY=https://registry.npm.taobao.org
-
-ENV PUPPETEER_DOWNLOAD_HOST=https://npm.taobao.org/mirrors/
+ARG PUPPETEER_DOWNLOAD_HOST=https://npm.taobao.org/mirrors/
 
 RUN echo "${ROOT_PASSWORD}" | passwd --stdin root \
-    && if [ "${NPM_REGISTRY} " != " " ];then (npm config set registry=${NPM_REGISTRY}) fi
+    && if [ "${NPM_REGISTRY} " != " " ];then (npm config set registry=${NPM_REGISTRY}) fi \
+    && if [ "${PUPPETEER_DOWNLOAD_HOST} " != " " ];then (echo -e "\\n\\nexport PUPPETEER_DOWNLOAD_HOST=${PUPPETEER_DOWNLOAD_HOST}\\n\\n" >> /etc/profile) fi
 ' > Dockerfile
 docker build -t ppspider_env .  
 # 创建 ppspider_env container，命名为 my_ppspider_env，需要暴露 webUi端口 9000，mongodb端口 27017，需要根据实际情况决定要暴露的端口

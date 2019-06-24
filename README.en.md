@@ -8,12 +8,12 @@ echo -e '
 FROM docker.io/xiyuanfengyu/ppspider_env
 
 ARG ROOT_PASSWORD=123456
-# ARG NPM_REGISTRY=https://registry.npm.taobao.org
-
-# ENV PUPPETEER_DOWNLOAD_HOST=https://npm.taobao.org/mirrors/
+#ARG NPM_REGISTRY=https://registry.npm.taobao.org
+#ARG PUPPETEER_DOWNLOAD_HOST=https://npm.taobao.org/mirrors/
 
 RUN echo "${ROOT_PASSWORD}" | passwd --stdin root \
-    && if [ "${NPM_REGISTRY} " != " " ];then (npm config set registry=${NPM_REGISTRY}) fi
+    && if [ "${NPM_REGISTRY} " != " " ];then (npm config set registry=${NPM_REGISTRY}) fi \
+    && if [ "${PUPPETEER_DOWNLOAD_HOST} " != " " ];then (echo -e "\\n\\nexport PUPPETEER_DOWNLOAD_HOST=${PUPPETEER_DOWNLOAD_HOST}\\n\\n" >> /etc/profile) fi
 ' > Dockerfile
 docker build -t ppspider_env .  
 # create ppspider_env container named my_ppspider_env, expose webUi port 9000, mongodb port 27017
@@ -23,7 +23,7 @@ docker run -itd -e "container=docker" --network=host -p 9000:9000 -p 27017:27017
 ppspiderWorkplace=/root/ppspider
 ppspiderProjectRep=https://github.com/xiyuan-fengyu/ppspider_docker_deploy
 ppspiderStartCmd="node lib/App.js"
-ppspiderProject=${ppspiderProjectRep##*/}
+ppspiderProject=`basename $ppspiderProjectRep .git`
 
 echo -e '
 cd '$ppspiderWorkplace'
