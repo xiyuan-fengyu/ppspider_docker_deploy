@@ -2,7 +2,7 @@
 This project is used to show you how to deploy an application using docker.   
 
 On the docker host, run the following:    
-```bash
+```shell script
 # build ppspider_env image
 echo -e '
 FROM docker.io/xiyuanfengyu/ppspider_env
@@ -19,35 +19,83 @@ docker build -t ppspider_env .
 # create ppspider_env container named my_ppspider_env, expose webUi port 9000, mongodb port 27017
 docker run -itd -e "container=docker" --network=host -p 9000:9000 -p 27017:27017 --name my_ppspider_env ppspider_env /usr/sbin/init
 
+
+# connect to my_ppspider_env by ssh
 # deploy project
 ppspiderWorkplace=/root/ppspider
 ppspiderProjectRep=https://github.com/xiyuan-fengyu/ppspider_docker_deploy
 ppspiderStartCmd="node lib/App.js"
 ppspiderProject=`basename $ppspiderProjectRep .git`
 
+cd $ppspiderWorkplace
+if [[ -d "$ppspiderWorkplace/$ppspiderProject" ]]; then
+    # update
+    echo "Error: $ppspiderWorkplace/$ppspiderProject existed"
+    exit -1
+fi
+
+# clone
+git clone --progress $ppspiderProjectRep $ppspiderProject
+cd $ppspiderProject
+
+# create update.sh
 echo -e '
 cd '$ppspiderWorkplace'
-if [[ -d "'$ppspiderWorkplace'/'$ppspiderProject'" && -d "'$ppspiderWorkplace'/'$ppspiderProject'/.git" ]]; then
-    # update
-    cd '$ppspiderProject'
-    git pull
-else
-    # clone
-    rm -rf '$ppspiderProject'
-    git clone --progress '$ppspiderProjectRep' '$ppspiderProject'
-    cd '$ppspiderProject'
-fi
+
+# update
+cd '$ppspiderWorkplace/$ppspiderProject'
+git pull
+
 # install npm dependencies
 yarn install
+
 # compile ts to js
 tsc -w false
-echo "nohup '$ppspiderStartCmd' 1>main.log 2>&1 &"
-nohup '$ppspiderStartCmd' 1>main.log 2>&1 &
-timeout 30 tail -f main.log
-' > /tmp/$ppspiderProject.sh
-docker exec my_ppspider_env mkdir -p $ppspiderWorkplace
-docker cp /tmp/$ppspiderProject.sh my_ppspider_env:$ppspiderWorkplace/$ppspiderProject.sh
-docker exec my_ppspider_env chmod +x $ppspiderWorkplace/$ppspiderProject.sh
-docker exec my_ppspider_env sh $ppspiderWorkplace/$ppspiderProject.sh
-# docker stop my_ppspider_env && docker rm my_ppspider_env
+' > update.sh
+chmod +x update.sh
+
+# create stop.sh
+echo -e '
+cd '$ppspiderWorkplace/$ppspiderProject'
+if [[ -f "pid" ]]; then
+    mainPid=$(cat pid)
+    if [[ "$mainPid " != " " ]]; then
+        relatedPids=$(ps -ef | grep "$mainPid" | awk '"'"'{print $2,$3}'"'"' | grep "$mainPid" | awk '"'"'{print $1}'"'"')
+    fi
+    if [[ "$relatedPids " != " " ]]; then
+        echo "kill existed process $mainPid"
+        kill $mainPid
+
+        echo -e "wait\\c"
+        allStop=0
+        while [[ $allStop == 0 ]]; do
+            allStop=1
+            for pid in $relatedPids; do
+                if ps -p $pid > /dev/null; then
+                   echo -e ".\\c"
+                   allStop=0
+                   break
+                fi
+            done
+            sleep 0.5
+        done
+        rm -rf pid
+        echo -e "stopped"
+    fi
+fi
+' > stop.sh
+chmod +x stop.sh
+
+# create start.sh
+echo -e '
+cd '$ppspiderWorkplace/$ppspiderProject'
+./stop.sh
+echo "nohup '$ppspiderStartCmd' 1>>main.log 2>&1 & echo $! > pid"
+nohup '$ppspiderStartCmd' 1>>main.log 2>&1 & echo $! > pid
+timeout 10 tail -f main.log
+' > start.sh
+chmod +x start.sh
+
+./update.sh
+./start.sh
 ```
