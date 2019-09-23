@@ -66,6 +66,8 @@ if [[ -f "pid" ]]; then
         kill -9 $mainPid
 
         echo -e "wait\\c"
+        sleep 0.25
+
         allStop=0
         while [[ $allStop == 0 ]]; do
             allStop=1
@@ -79,7 +81,7 @@ if [[ -f "pid" ]]; then
             sleep 0.5
         done
         rm -rf pid
-        echo -e "stopped"
+        echo -e "\\nstopped"
     fi
 fi
 ' > stop.sh
