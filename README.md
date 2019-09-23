@@ -73,9 +73,10 @@ if [[ -f "pid" ]]; then
             allStop=1
             for pid in $relatedPids; do
                 if ps -p $pid > /dev/null; then
-                   echo -e ".\\c"
-                   allStop=0
-                   break
+                    echo -e ".\\c"
+                    kill -9 $pid
+                    allStop=0
+                    break
                 fi
             done
             sleep 0.5
