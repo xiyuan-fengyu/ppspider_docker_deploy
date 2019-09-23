@@ -89,6 +89,10 @@ chmod +x stop.sh
 echo -e '
 cd $(cd `dirname $0`; pwd)
 ./stop.sh
+# 备份日志
+if [[ -f "main.log" ]];then
+    mv main.log main.log.`date "+%Y%m%d_%H%M%S"`  
+fi
 echo "nohup '$ppspiderStartCmd' 1>>main.log 2>&1 & echo $! > pid"
 nohup '$ppspiderStartCmd' 1>>main.log 2>&1 & echo $! > pid
 timeout 10 tail -f main.log
