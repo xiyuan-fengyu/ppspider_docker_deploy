@@ -94,7 +94,10 @@ cd $(cd `dirname $0`; pwd)
 ./stop.sh
 # 备份日志
 if [[ -f "main.log" ]];then
-    mv main.log main.log.`date "+%Y%m%d_%H%M%S"`  
+    if [[ ! -d "log_bak" ]];then
+        mkdir log_bak
+    fi
+    mv main.log log_bak/main.log.`date "+%Y%m%d_%H%M%S"`  
 fi
 echo "nohup '$ppspiderStartCmd' 1>>main.log 2>&1 & echo $! > pid"
 nohup '$ppspiderStartCmd' 1>>main.log 2>&1 & echo $! > pid
