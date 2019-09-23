@@ -40,10 +40,9 @@ cd $ppspiderProject
 
 # create update.sh
 echo -e '
-cd '$ppspiderWorkplace'
+cd $(cd `dirname $0`; pwd)
 
 # update
-cd '$ppspiderWorkplace/$ppspiderProject'
 git pull
 
 # install npm dependencies
@@ -56,7 +55,7 @@ chmod +x update.sh
 
 # create stop.sh
 echo -e '
-cd '$ppspiderWorkplace/$ppspiderProject'
+cd $(cd `dirname $0`; pwd)
 if [[ -f "pid" ]]; then
     mainPid=$(cat pid)
     if [[ "$mainPid " != " " ]]; then
@@ -64,7 +63,7 @@ if [[ -f "pid" ]]; then
     fi
     if [[ "$relatedPids " != " " ]]; then
         echo "kill existed process $mainPid"
-        kill $mainPid
+        kill -9 $mainPid
 
         echo -e "wait\\c"
         allStop=0
@@ -88,7 +87,7 @@ chmod +x stop.sh
 
 # create start.sh
 echo -e '
-cd '$ppspiderWorkplace/$ppspiderProject'
+cd $(cd `dirname $0`; pwd)
 ./stop.sh
 echo "nohup '$ppspiderStartCmd' 1>>main.log 2>&1 & echo $! > pid"
 nohup '$ppspiderStartCmd' 1>>main.log 2>&1 & echo $! > pid
