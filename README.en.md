@@ -22,10 +22,20 @@ docker run -itd -e "container=docker" --network=host -p 9000:9000 -p 27017:27017
 
 # connect to my_ppspider_env by ssh
 # deploy project
-ppspiderWorkplace=/root/ppspider
 ppspiderProjectRep=https://github.com/xiyuan-fengyu/ppspider_docker_deploy
 ppspiderStartCmd="node lib/App.js"
 ppspiderProject=`basename $ppspiderProjectRep .git`
+
+if id -u ppspider >/dev/null 2>&1; then
+    echo "user(ppspider) existed"
+else
+    # chromium cannot work with root user
+    useradd ppspider
+fi
+if [ `whoami` != "ppspider" ];then
+    su ppspider
+fi
+ppspiderWorkplace=/home/ppspider
 
 cd $ppspiderWorkplace
 if [[ -d "$ppspiderWorkplace/$ppspiderProject" ]]; then
@@ -40,6 +50,9 @@ cd $ppspiderProject
 
 # create update.sh
 echo -e '
+if [ `whoami` != "ppspider" ];then
+    su ppspider
+fi
 cd $(cd `dirname $0`; pwd)
 
 # update
@@ -90,6 +103,9 @@ chmod +x stop.sh
 
 # create start.sh
 echo -e '
+if [ `whoami` != "ppspider" ];then
+    su ppspider
+fi
 cd $(cd `dirname $0`; pwd)
 ./stop.sh
 # log backup
