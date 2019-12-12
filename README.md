@@ -1,7 +1,7 @@
 # ppspider_docker_deploy
 这个项目用于演示使用 docker 部署的过程  
 
-在docker宿主机上，运行以下命令  
+在docker宿主机上，运行以下命令构建ppspider运行环境container    
 ```shell script
 # 构建 ppspider_env image
 echo -e '
@@ -18,10 +18,10 @@ RUN echo "${ROOT_PASSWORD}" | passwd --stdin root \
 docker build -t ppspider_env .  
 # 创建 ppspider_env container，命名为 my_ppspider_env，需要暴露 webUi端口 9000，mongodb端口 27017，需要根据实际情况决定要暴露的端口
 docker run -itd -e "container=docker" --network=host -p 9000:9000 -p 27017:27017 --name my_ppspider_env ppspider_env /usr/sbin/init
+````
 
-
-# 使用 ssh 连接到  my_ppspider_env
-# 开始部署项目
+使用 ssh 连接到 my_ppspider_env，开始部署项目
+```shell script
 ppspiderProjectRep=https://github.com/xiyuan-fengyu/ppspider_docker_deploy
 ppspiderStartCmd="node lib/App.js"
 ppspiderProject=`basename $ppspiderProjectRep .git`
